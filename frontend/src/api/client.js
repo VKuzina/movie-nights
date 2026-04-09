@@ -16,7 +16,9 @@ async function request(path, options = {}) {
   });
   if (!res.ok) {
     const err = await res.json().catch(() => ({ detail: res.statusText }));
-    throw new Error(err.detail || "Request failed");
+    const error = new Error(err.detail || "Request failed");
+    error.status = res.status;
+    throw error;
   }
   if (res.status === 204) return null;
   return res.json();
@@ -43,9 +45,33 @@ export const api = {
 
   addMovie: (movie) => request("/movies", { method: "POST", body: JSON.stringify(movie) }),
 
-  likeMovie: (id) => request(`/movies/${id}/like`, { method: "POST" }),
+  setPreference: (id, preference) =>
+    request(`/movies/${id}/preference`, { method: "PUT", body: JSON.stringify({ preference }) }),
 
-  unlikeMovie: (id) => request(`/movies/${id}/like`, { method: "DELETE" }),
+  deletePreference: (id) => request(`/movies/${id}/preference`, { method: "DELETE" }),
 
-  myLikedMovies: () => request("/users/me/liked-movies"),
+  myMovies: (preference) =>
+    request(`/users/me/movies${preference ? `?preference=${preference}` : ""}`),
+
+  createEvent: (event) => request("/events", { method: "POST", body: JSON.stringify(event) }),
+
+  listEvents: () => request("/events"),
+
+  getEvent: (id) => request(`/events/${id}`),
+
+  addMovieToEvent: (eventId, movieId) =>
+    request(`/events/${eventId}/movies`, { method: "POST", body: JSON.stringify({ movie_id: movieId }) }),
+
+  removeMovieFromEvent: (eventId, movieId) =>
+    request(`/events/${eventId}/movies/${movieId}`, { method: "DELETE" }),
+
+  inviteUser: (eventId, username) =>
+    request(`/events/${eventId}/invites`, { method: "POST", body: JSON.stringify({ username }) }),
+
+  myInvites: () => request("/users/me/invites"),
+
+  respondToInvite: (eventId, status) =>
+    request(`/events/${eventId}/invites/respond`, { method: "POST", body: JSON.stringify({ status }) }),
+
+  eventSuggestions: (eventId) => request(`/events/${eventId}/suggestions`),
 };

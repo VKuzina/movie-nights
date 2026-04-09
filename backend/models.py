@@ -3,12 +3,13 @@ from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from database import Base
 
-# Association: users <-> liked movies
-user_liked_movies = Table(
-    "user_liked_movies",
+# Association: users <-> movie preferences (with preference column)
+user_movie_preferences = Table(
+    "user_movie_preferences",
     Base.metadata,
     Column("user_id", Integer, ForeignKey("users.id"), primary_key=True),
     Column("movie_id", Integer, ForeignKey("movies.id"), primary_key=True),
+    Column("preference", String, nullable=False),
 )
 
 # Association: movie nights <-> movies
@@ -28,6 +29,18 @@ event_attendees = Table(
 )
 
 
+class EventInvitation(Base):
+    __tablename__ = "event_invitations"
+
+    id = Column(Integer, primary_key=True, index=True)
+    event_id = Column(Integer, ForeignKey("movie_night_events.id"), nullable=False)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    status = Column(String, nullable=False, default="pending")
+
+    event = relationship("MovieNightEvent", back_populates="invitations")
+    invitee = relationship("User", back_populates="invitations")
+
+
 class User(Base):
     __tablename__ = "users"
 
@@ -37,9 +50,9 @@ class User(Base):
     hashed_password = Column(String, nullable=False)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
 
-    liked_movies = relationship("Movie", secondary=user_liked_movies, back_populates="liked_by")
     organized_events = relationship("MovieNightEvent", back_populates="organizer")
     attending_events = relationship("MovieNightEvent", secondary=event_attendees, back_populates="attendees")
+    invitations = relationship("EventInvitation", back_populates="invitee")
 
 
 class Movie(Base):
@@ -51,8 +64,8 @@ class Movie(Base):
     genre = Column(String)
     poster_url = Column(String)
     description = Column(String)
+    imdb_url = Column(String)
 
-    liked_by = relationship("User", secondary=user_liked_movies, back_populates="liked_movies")
     events = relationship("MovieNightEvent", secondary=event_movies, back_populates="movies")
 
 
@@ -64,7 +77,9 @@ class MovieNightEvent(Base):
     scheduled_at = Column(DateTime)
     created_at = Column(DateTime, default=lambda: datetime.now(timezone.utc))
     organizer_id = Column(Integer, ForeignKey("users.id"), nullable=False)
+    location = Column(String)
 
     organizer = relationship("User", back_populates="organized_events")
     movies = relationship("Movie", secondary=event_movies, back_populates="events")
     attendees = relationship("User", secondary=event_attendees, back_populates="attending_events")
+    invitations = relationship("EventInvitation", back_populates="event")
