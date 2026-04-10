@@ -93,9 +93,9 @@ export default function EventDetail() {
   });
 
   return (
-    <div style={{ minHeight: "100vh", background: "#111", color: "#fff", fontFamily: "sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0" }}>
       <Nav username={user.username} onLogout={() => { api.logout(); navigate("/login"); }} />
-      <main style={{ padding: "2rem", maxWidth: "900px" }}>
+      <main style={{ padding: "2rem 2rem 4rem", maxWidth: "960px" }}>
         {error && <p style={{ color: "#e50914", marginBottom: "1rem" }}>{error}</p>}
 
         <button onClick={() => navigate("/events")} style={{ background: "none", border: "none", color: "#aaa", cursor: "pointer", marginBottom: "1rem", padding: 0 }}>← Back to Events</button>
@@ -161,7 +161,7 @@ export default function EventDetail() {
                   <div key={movie.id} style={{ background: "#1e1e1e", borderRadius: "10px", padding: "1rem", display: "flex", gap: "1rem", alignItems: "flex-start" }}>
                     <span style={{ fontSize: "1.4rem", fontWeight: 700, color: "#555", minWidth: "2rem" }}>#{idx + 1}</span>
                     {movie.poster_url && (
-                      <img src={movie.poster_url} alt={movie.title} style={{ width: "50px", height: "75px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+                      <img src={movie.poster_url} alt={movie.title} referrerPolicy="no-referrer" loading="lazy" style={{ width: "50px", height: "75px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
                     )}
                     <div style={{ flex: 1 }}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: "0.6rem", flexWrap: "wrap" }}>
@@ -244,7 +244,7 @@ export default function EventDetail() {
                     }}
                   >
                     {movie.poster_url && (
-                      <img src={movie.poster_url} alt={movie.title} style={{ width: "40px", height: "60px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
+                      <img src={movie.poster_url} alt={movie.title} referrerPolicy="no-referrer" loading="lazy" style={{ width: "40px", height: "60px", objectFit: "cover", borderRadius: "4px", flexShrink: 0 }} />
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: "0.5rem", flexWrap: "wrap" }}>

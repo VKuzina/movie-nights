@@ -108,5 +108,5 @@ else:
     # Vite may have picked a different port if 5173 was busy
     print(f"  Frontend started (may be on http://localhost:5174 if 5173 was busy)")
 
-print("\n✓ All done. Both server windows are open.")
+print("\nAll done. Both server windows are open.")
 print("  Close those two terminal windows to shut everything down.\n")

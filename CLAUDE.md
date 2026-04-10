@@ -17,7 +17,10 @@ Movie Nights is a full-stack web app for managing a personal movie watchlist and
   - `dont_watch_without_me` → 0 + warning flag
   - `dont_want_to_watch` → −1 (veto)
 - Users can browse their own filtered lists by preference on the My Lists page.
-- Any logged-in user can add a movie to the global catalog (title, year, genre, poster URL, IMDB URL, description).
+- Any logged-in user can add a movie to the global catalog. The primary flow is: paste an IMDB URL → auto-fill all fields via OMDB API. A "Add manually" fallback exists for movies without an IMDB page.
+- Duplicate titles are rejected (case-insensitive) with a clear error message.
+- The Browse page has a real-time search bar filtering by title, genre, or year.
+- Movie cards open a detail modal showing poster, description, genre pills, IMDB link, preference selector, and similar movies by genre.
 
 **Movie Night Events**
 - A user creates an event with: name, date/time, and location.
@@ -72,9 +75,9 @@ npm run dev
 **Seeding movies:**
 ```bash
 cd backend
-python seed_movies.py
+python -X utf8 seed_movies.py
 ```
-Inserts ~100 IMDB top movies with poster URLs and IMDB links. Safe to re-run (duplicates are rejected by the API with 400).
+Fetches ~250 movies from OMDB by IMDB ID (posters from Amazon CDN, plot descriptions included). Safe to re-run — duplicates are rejected by the API with 409. Uses the `testflow` / `pass123` account; create it first if needed. Requires the backend to be running.
 
 Frontend runs at `http://localhost:5173`. Vite proxies `/api/*` → `http://localhost:8000` (stripping the `/api` prefix). Port configured in `frontend/vite.config.js`; `start.py` keeps this in sync automatically.
 
@@ -85,6 +88,8 @@ Backend API docs: `http://localhost:8000/docs`
 - `SECRET_KEY` — JWT signing key, defaults to `dev-secret-key`
 - `ALGORITHM` — JWT algorithm, defaults to `HS256`
 - `ACCESS_TOKEN_EXPIRE_MINUTES` — defaults to `60`
+- `OMDB_API_KEY` — OMDB API key for movie lookup and seeding, defaults to project key
+- `FRONTEND_ORIGIN` — comma-separated allowed CORS origins, defaults to `http://localhost:5173,http://localhost:5174`
 
 ---
 
@@ -110,7 +115,8 @@ Authentication uses OAuth2 password flow. `/auth/login` accepts `application/x-w
 | POST | `/auth/login` | No | Login (form-encoded) |
 | GET | `/auth/me` | Yes | Current user |
 | GET | `/movies` | No | All movies |
-| POST | `/movies` | Yes | Add movie |
+| GET | `/movies/lookup` | Yes | Fetch metadata from OMDB by `?imdb_url=` |
+| POST | `/movies` | Yes | Add movie (rejects duplicate titles, case-insensitive) |
 | PUT | `/movies/{id}/preference` | Yes | Set preference |
 | DELETE | `/movies/{id}/preference` | Yes | Remove preference |
 | GET | `/users/me/movies` | Yes | My movies (`?preference=` filter) |
@@ -130,11 +136,12 @@ Authentication uses OAuth2 password flow. `/auth/login` accepts `application/x-w
 - `App.jsx` — router; `PrivateRoute` wraps all authenticated pages
 - `pages/Login.jsx` — login form
 - `pages/Register.jsx` — registration form
-- `pages/Dashboard.jsx` — movie grid with 5-option preference selector per card, IMDB link, "+ Add Movie" button. Exports `Nav` component (shared across all pages)
+- `pages/Dashboard.jsx` — movie grid with real-time search (title/genre/year), 5-option preference selector per card, IMDB link, "+ Add Movie" button. Exports `Nav` and `PosterImage` components (shared across pages)
 - `pages/MyLists.jsx` — movies filtered by preference tab
 - `pages/Events.jsx` — upcoming/past events, pending invites with Accept/Decline, "+ Create Event"
 - `pages/EventDetail.jsx` — event header, attendees, invite form (organizer only), two-tab view: Event Movies (ranked) + Group Picks (full catalog with editable preferences)
-- `components/AddMovieModal.jsx` — modal form to add a movie to the catalog
+- `components/AddMovieModal.jsx` — two-step modal: (1) paste IMDB URL → auto-lookup via OMDB, (2) confirm/edit pre-filled form. "Add manually" fallback skips step 1.
+- `components/MovieModal.jsx` — full detail modal: poster, description, genre pills, IMDB link, preference selector, similar movies by genre
 - `components/CreateEventModal.jsx` — modal form to create an event
 
 ### Data Model

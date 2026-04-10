@@ -21,33 +21,43 @@ export default function Login() {
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Movie Nights</h1>
-        <h2 style={styles.subtitle}>Sign in</h2>
-        {error && <p style={styles.error}>{error}</p>}
+    <div className="auth-bg" style={styles.container}>
+      <div className="fade-up" style={styles.card}>
+        <div style={styles.logoWrap}>
+          <span style={styles.logoIcon}>🎬</span>
+          <h1 style={styles.title}>Movie Nights</h1>
+        </div>
+        <h2 style={styles.subtitle}>Welcome back</h2>
+        {error && <div style={styles.errorBox}>{error}</div>}
         <form onSubmit={handleSubmit} style={styles.form}>
-          <input
-            style={styles.input}
-            name="username"
-            placeholder="Username"
-            value={form.username}
-            onChange={handleChange}
-            required
-          />
-          <input
-            style={styles.input}
-            name="password"
-            type="password"
-            placeholder="Password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
-          <button style={styles.button} type="submit">Sign in</button>
+          <label style={styles.label}>
+            Username
+            <input
+              style={styles.input}
+              name="username"
+              placeholder="your username"
+              value={form.username}
+              onChange={handleChange}
+              required
+              autoFocus
+            />
+          </label>
+          <label style={styles.label}>
+            Password
+            <input
+              style={styles.input}
+              name="password"
+              type="password"
+              placeholder="••••••••"
+              value={form.password}
+              onChange={handleChange}
+              required
+            />
+          </label>
+          <button className="btn-primary" style={styles.button} type="submit">Sign in</button>
         </form>
         <p style={styles.footer}>
-          No account? <Link to="/register">Register</Link>
+          No account? <Link to="/register" style={styles.footerLink}>Register</Link>
         </p>
       </div>
     </div>
@@ -55,13 +65,63 @@ export default function Login() {
 }
 
 const styles = {
-  container: { display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh", background: "#111" },
-  card: { background: "#1e1e1e", padding: "2rem", borderRadius: "12px", width: "340px", color: "#fff" },
-  title: { margin: "0 0 0.25rem", fontSize: "1.8rem", textAlign: "center" },
-  subtitle: { margin: "0 0 1.5rem", fontWeight: 400, textAlign: "center", color: "#aaa" },
-  form: { display: "flex", flexDirection: "column", gap: "0.75rem" },
-  input: { padding: "0.6rem 0.8rem", borderRadius: "6px", border: "1px solid #333", background: "#2a2a2a", color: "#fff", fontSize: "1rem" },
-  button: { padding: "0.7rem", borderRadius: "6px", border: "none", background: "#e50914", color: "#fff", fontSize: "1rem", cursor: "pointer" },
-  error: { color: "#e50914", marginBottom: "0.5rem" },
-  footer: { marginTop: "1rem", textAlign: "center", color: "#aaa", fontSize: "0.9rem" },
+  container: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    minHeight: "100vh",
+  },
+  card: {
+    background: "rgba(22,22,22,0.95)",
+    border: "1px solid rgba(255,255,255,0.07)",
+    padding: "2.5rem",
+    borderRadius: "16px",
+    width: "360px",
+    color: "#f0f0f0",
+    boxShadow: "0 32px 80px rgba(0,0,0,0.6)",
+  },
+  logoWrap: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: "0.5rem",
+    marginBottom: "0.4rem",
+  },
+  logoIcon: { fontSize: "1.8rem" },
+  title: { fontSize: "1.6rem", fontWeight: 800, letterSpacing: "-0.02em" },
+  subtitle: { textAlign: "center", fontWeight: 400, color: "#666", fontSize: "0.95rem", marginBottom: "1.8rem" },
+  errorBox: {
+    background: "rgba(229,9,20,0.1)",
+    border: "1px solid rgba(229,9,20,0.3)",
+    borderRadius: "8px",
+    padding: "0.6rem 0.9rem",
+    color: "#e57070",
+    fontSize: "0.85rem",
+    marginBottom: "1rem",
+  },
+  form: { display: "flex", flexDirection: "column", gap: "1rem" },
+  label: { display: "flex", flexDirection: "column", gap: "0.4rem", fontSize: "0.82rem", color: "#888", fontWeight: 500, letterSpacing: "0.04em", textTransform: "uppercase" },
+  input: {
+    padding: "0.65rem 0.9rem",
+    borderRadius: "8px",
+    border: "1px solid #2a2a2a",
+    background: "#111",
+    color: "#f0f0f0",
+    fontSize: "0.95rem",
+    width: "100%",
+  },
+  button: {
+    marginTop: "0.5rem",
+    padding: "0.75rem",
+    borderRadius: "8px",
+    border: "none",
+    background: "#e50914",
+    color: "#fff",
+    fontSize: "0.95rem",
+    fontWeight: 700,
+    cursor: "pointer",
+    letterSpacing: "0.02em",
+  },
+  footer: { marginTop: "1.5rem", textAlign: "center", color: "#555", fontSize: "0.85rem" },
+  footerLink: { color: "#e57070", fontWeight: 600 },
 };

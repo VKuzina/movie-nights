@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table
+from sqlalchemy import Column, Integer, String, ForeignKey, DateTime, Table, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from database import Base
@@ -31,6 +31,7 @@ event_attendees = Table(
 
 class EventInvitation(Base):
     __tablename__ = "event_invitations"
+    __table_args__ = (UniqueConstraint("event_id", "user_id", name="uq_event_invitation"),)
 
     id = Column(Integer, primary_key=True, index=True)
     event_id = Column(Integer, ForeignKey("movie_night_events.id"), nullable=False)

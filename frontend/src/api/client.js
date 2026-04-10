@@ -1,4 +1,4 @@
-const BASE = "/api";
+const BASE = import.meta.env.VITE_API_URL ?? "/api";
 
 function getToken() {
   return localStorage.getItem("token");
@@ -40,6 +40,8 @@ export const api = {
   logout: () => localStorage.removeItem("token"),
 
   me: () => request("/auth/me"),
+
+  lookupMovie: (imdbUrl) => request(`/movies/lookup?imdb_url=${encodeURIComponent(imdbUrl)}`),
 
   listMovies: () => request("/movies"),
 

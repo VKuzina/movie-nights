@@ -35,34 +35,49 @@ export default function Events() {
     }
   };
 
-  if (!user) return <div style={{ color: "#fff", padding: "2rem" }}>Loading…</div>;
+  if (!user) return <div style={{ color: "#aaa", padding: "2rem" }}>Loading…</div>;
 
   const now = new Date();
   const upcoming = events.filter((e) => e.scheduled_at && new Date(e.scheduled_at) >= now);
   const past = events.filter((e) => !e.scheduled_at || new Date(e.scheduled_at) < now);
 
   return (
-    <div style={{ minHeight: "100vh", background: "#111", color: "#fff", fontFamily: "sans-serif" }}>
+    <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0" }}>
       <Nav username={user.username} onLogout={() => { api.logout(); navigate("/login"); }} />
-      <main style={{ padding: "2rem" }}>
-        {error && <p style={{ color: "#e50914", marginBottom: "1rem" }}>{error}</p>}
+      <main style={{ padding: "2rem 2rem 4rem" }}>
+        {error && <p style={{ color: "#e50914", marginBottom: "1rem", fontSize: "0.9rem" }}>{error}</p>}
 
+        {/* Pending invites */}
         {invites.length > 0 && (
           <section style={{ marginBottom: "2.5rem" }}>
-            <h2 style={{ marginBottom: "1rem", fontSize: "1.1rem", color: "#f5c518" }}>Pending Invites</h2>
-            <div style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
+            <SectionHeader label="Pending Invites" count={invites.length} accent="#f5c518" />
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
               {invites.map((inv) => (
-                <div key={inv.id} style={{ background: "#1e1e1e", borderRadius: "10px", padding: "1rem 1.2rem", display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", flexWrap: "wrap" }}>
-                  <div>
-                    <strong>{inv.event.name}</strong>
-                    <span style={{ color: "#aaa", marginLeft: "0.8rem", fontSize: "0.85rem" }}>
-                      {formatDate(inv.event.scheduled_at)} · by {inv.event.organizer.username}
-                      {inv.event.location && ` · ${inv.event.location}`}
-                    </span>
+                <div key={inv.id} className="fade-up" style={inviteCardStyle}>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "0.6rem", flexWrap: "wrap" }}>
+                      <strong style={{ fontSize: "1rem" }}>{inv.event.name}</strong>
+                      <span style={{ color: "#555", fontSize: "0.8rem" }}>by {inv.event.organizer.username}</span>
+                    </div>
+                    <p style={{ color: "#888", fontSize: "0.82rem", marginTop: "0.25rem" }}>
+                      {formatDate(inv.event.scheduled_at)}
+                      {inv.event.location && ` · 📍 ${inv.event.location}`}
+                    </p>
                   </div>
-                  <div style={{ display: "flex", gap: "0.6rem" }}>
-                    <button onClick={() => handleRespond(inv.event.id, "accepted")} style={{ padding: "0.4rem 1rem", borderRadius: "6px", border: "none", background: "#2ecc71", color: "#fff", cursor: "pointer", fontWeight: 600 }}>Accept</button>
-                    <button onClick={() => handleRespond(inv.event.id, "declined")} style={{ padding: "0.4rem 1rem", borderRadius: "6px", border: "1px solid #555", background: "transparent", color: "#ccc", cursor: "pointer" }}>Decline</button>
+                  <div style={{ display: "flex", gap: "0.5rem", flexShrink: 0 }}>
+                    <button
+                      onClick={() => handleRespond(inv.event.id, "accepted")}
+                      style={acceptBtnStyle}
+                    >
+                      Accept
+                    </button>
+                    <button
+                      className="btn-ghost"
+                      onClick={() => handleRespond(inv.event.id, "declined")}
+                      style={declineBtnStyle}
+                    >
+                      Decline
+                    </button>
                   </div>
                 </div>
               ))}
@@ -70,14 +85,21 @@ export default function Events() {
           </section>
         )}
 
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
-          <h2 style={{ margin: 0 }}>Events</h2>
-          <button onClick={() => setShowCreate(true)} style={{ padding: "0.5rem 1.2rem", borderRadius: "6px", border: "none", background: "#e50914", color: "#fff", cursor: "pointer", fontWeight: 600 }}>+ Create Event</button>
+        {/* Header */}
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "2rem" }}>
+          <h2 style={{ fontSize: "1.6rem", fontWeight: 700 }}>Events</h2>
+          <button
+            className="btn-primary"
+            onClick={() => setShowCreate(true)}
+            style={{ padding: "0.55rem 1.3rem", borderRadius: "8px", border: "none", background: "#e50914", color: "#fff", cursor: "pointer", fontWeight: 600, fontSize: "0.9rem" }}
+          >
+            + Create Event
+          </button>
         </div>
 
         {upcoming.length > 0 && (
-          <div style={{ marginBottom: "2.5rem" }}>
-            <h3 style={{ color: "#aaa", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>Upcoming</h3>
+          <div style={{ marginBottom: "3rem" }}>
+            <SectionHeader label="Upcoming" count={upcoming.length} />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
               {upcoming.map((evt) => <EventCard key={evt.id} event={evt} onClick={() => navigate(`/events/${evt.id}`)} />)}
             </div>
@@ -86,15 +108,18 @@ export default function Events() {
 
         {past.length > 0 && (
           <div>
-            <h3 style={{ color: "#aaa", fontSize: "0.9rem", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "1rem" }}>Past</h3>
+            <SectionHeader label="Past" count={past.length} dim />
             <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
-              {past.map((evt) => <EventCard key={evt.id} event={evt} onClick={() => navigate(`/events/${evt.id}`)} />)}
+              {past.map((evt) => <EventCard key={evt.id} event={evt} past onClick={() => navigate(`/events/${evt.id}`)} />)}
             </div>
           </div>
         )}
 
         {events.length === 0 && invites.length === 0 && (
-          <p style={{ color: "#666" }}>No events yet. Create one or wait for an invite!</p>
+          <div style={{ textAlign: "center", padding: "6rem 0", color: "#444" }}>
+            <div style={{ fontSize: "3rem", marginBottom: "1rem" }}>🎉</div>
+            <p>No events yet. Create one or wait for an invite!</p>
+          </div>
         )}
       </main>
       {showCreate && (
@@ -107,13 +132,57 @@ export default function Events() {
   );
 }
 
-function EventCard({ event, onClick }) {
+function SectionHeader({ label, count, accent, dim }) {
   return (
-    <div onClick={onClick} style={{ background: "#1e1e1e", borderRadius: "10px", padding: "1.2rem", cursor: "pointer", borderLeft: "3px solid #e50914" }}>
-      <h3 style={{ margin: "0 0 0.4rem", fontSize: "1rem" }}>{event.name}</h3>
-      <p style={{ margin: 0, color: "#aaa", fontSize: "0.85rem" }}>{formatDate(event.scheduled_at)}</p>
-      {event.location && <p style={{ margin: "0.2rem 0 0", color: "#888", fontSize: "0.82rem" }}>{event.location}</p>}
-      <p style={{ margin: "0.4rem 0 0", color: "#666", fontSize: "0.8rem" }}>by {event.organizer.username}</p>
+    <h3 style={{
+      fontSize: "0.78rem",
+      fontWeight: 700,
+      textTransform: "uppercase",
+      letterSpacing: "0.1em",
+      color: accent || (dim ? "#444" : "#555"),
+      marginBottom: "1rem",
+      display: "flex",
+      alignItems: "center",
+      gap: "0.5rem",
+    }}>
+      {label}
+      {count !== undefined && (
+        <span style={{ background: "#1e1e1e", borderRadius: "10px", padding: "0.1rem 0.5rem", fontSize: "0.72rem", color: "#555", fontWeight: 400 }}>
+          {count}
+        </span>
+      )}
+    </h3>
+  );
+}
+
+function EventCard({ event, onClick, past }) {
+  return (
+    <div
+      className="event-card fade-up"
+      onClick={onClick}
+      style={{
+        background: past ? "#111" : "#161616",
+        borderRadius: "12px",
+        padding: "1.4rem",
+        cursor: "pointer",
+        borderLeft: `3px solid ${past ? "#2a2a2a" : "#e50914"}`,
+        border: "1px solid rgba(255,255,255,0.05)",
+        borderLeftWidth: "3px",
+        borderLeftColor: past ? "#2a2a2a" : "#e50914",
+        opacity: past ? 0.7 : 1,
+      }}
+    >
+      <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem", fontWeight: 600, color: past ? "#888" : "#f0f0f0" }}>
+        {event.name}
+      </h3>
+      <p style={{ margin: 0, color: "#666", fontSize: "0.82rem" }}>{formatDate(event.scheduled_at)}</p>
+      {event.location && (
+        <p style={{ margin: "0.25rem 0 0", color: "#555", fontSize: "0.8rem" }}>📍 {event.location}</p>
+      )}
+      <div style={{ marginTop: "0.75rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+        <span style={{ fontSize: "0.75rem", color: "#555" }}>by</span>
+        <span style={{ fontSize: "0.78rem", color: "#888", fontWeight: 500 }}>{event.organizer.username}</span>
+      </div>
     </div>
   );
 }
@@ -122,3 +191,37 @@ function formatDate(dt) {
   if (!dt) return "No date set";
   return new Date(dt).toLocaleString(undefined, { dateStyle: "medium", timeStyle: "short" });
 }
+
+const inviteCardStyle = {
+  background: "rgba(245,197,24,0.05)",
+  border: "1px solid rgba(245,197,24,0.15)",
+  borderRadius: "12px",
+  padding: "1rem 1.2rem",
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  gap: "1rem",
+  flexWrap: "wrap",
+};
+
+const acceptBtnStyle = {
+  padding: "0.4rem 1rem",
+  borderRadius: "7px",
+  border: "none",
+  background: "#2ecc71",
+  color: "#fff",
+  cursor: "pointer",
+  fontWeight: 600,
+  fontSize: "0.85rem",
+  transition: "filter 0.15s",
+};
+
+const declineBtnStyle = {
+  padding: "0.4rem 0.9rem",
+  borderRadius: "7px",
+  border: "1px solid #2a2a2a",
+  background: "transparent",
+  color: "#666",
+  cursor: "pointer",
+  fontSize: "0.85rem",
+};
