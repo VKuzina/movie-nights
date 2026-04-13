@@ -56,7 +56,7 @@ export default function MyLists() {
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0" }}>
       <Nav username={user.username} onLogout={() => { api.logout(); navigate("/login"); }} />
-      <main style={{ padding: "2rem 2rem 4rem" }}>
+      <main className="page-main" style={{ padding: "2rem 2rem 4rem" }}>
         <h2 style={{ fontSize: "1.6rem", fontWeight: 700, marginBottom: "1.5rem" }}>My Lists</h2>
 
         {/* Tab bar */}
@@ -96,7 +96,7 @@ export default function MyLists() {
             <p style={{ color: "#555", fontSize: "0.82rem", marginBottom: "1.5rem" }}>
               {movies.length} movie{movies.length !== 1 ? "s" : ""}
             </p>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1.5rem" }}>
+            <div className="movie-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1.5rem" }}>
               {movies.map((movie) => (
                 <ListMovieCard key={movie.id} movie={movie} onPreferenceChange={handlePreferenceChange} onClick={() => setSelectedMovie(movie)} />
               ))}

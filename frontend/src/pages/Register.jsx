@@ -22,8 +22,8 @@ export default function Register() {
   };
 
   return (
-    <div className="auth-bg" style={styles.container}>
-      <div className="fade-up" style={styles.card}>
+    <div className="auth-bg auth-container" style={styles.container}>
+      <div className="fade-up auth-card" style={styles.card}>
         <div style={styles.logoWrap}>
           <span style={styles.logoIcon}>🎬</span>
           <h1 style={styles.title}>Movie Nights</h1>

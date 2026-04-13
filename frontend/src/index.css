@@ -171,3 +171,96 @@ input:focus, select:focus, textarea:focus {
 .fade-up {
   animation: fadeUp 0.3s ease both;
 }
+
+/* ── Mobile responsive ─────────────────────────────── */
+
+@media (max-width: 640px) {
+  /* Nav: wrap to two rows (links move to bottom) */
+  .nav-header {
+    flex-wrap: wrap !important;
+    height: auto !important;
+    padding: 0.6rem 1rem !important;
+  }
+  .nav-links-row {
+    order: 3;
+    width: 100%;
+    justify-content: center !important;
+    gap: 1.5rem !important;
+    padding: 0.4rem 0 0.2rem;
+    border-top: 1px solid rgba(255,255,255,0.05);
+  }
+  /* Hide the username text in the nav to save space */
+  .nav-username {
+    display: none !important;
+  }
+
+  /* Reduce page side padding on mobile */
+  .page-main {
+    padding: 1.25rem 1rem 3rem !important;
+  }
+
+  /* Movie grid: smaller minimum card width → two columns on phone */
+  .movie-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+    gap: 1rem !important;
+  }
+
+  /* MovieModal: edge-to-edge poster at top, padded text below */
+  .modal-overlay {
+    padding: 0.5rem !important;
+    align-items: flex-start !important;
+  }
+  .modal-body-flex {
+    flex-direction: column !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+  /* Poster goes full-width, capped height so text stays on screen */
+  .modal-poster-col {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    align-self: stretch !important;
+  }
+  .modal-poster-col .poster-wrap img {
+    aspect-ratio: unset !important;
+    height: 260px !important;
+    object-fit: cover !important;
+  }
+  .modal-poster-col .poster-placeholder {
+    aspect-ratio: unset !important;
+    height: 200px !important;
+  }
+  /* Details text section gets its own padding */
+  .modal-details-col {
+    padding: 1.25rem !important;
+  }
+  /* Similar movies section */
+  .modal-similar-section {
+    padding: 1rem 1.25rem 1.5rem !important;
+  }
+
+  /* AddMovieModal year+genre grid: single column */
+  .form-grid-2col {
+    grid-template-columns: 1fr !important;
+  }
+
+  /* EventDetail invite form: stack input + button */
+  .invite-form {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+}
+
+/* Auth pages: allow card to go full-width on very small phones */
+@media (max-width: 400px) {
+  .auth-container {
+    padding: 0 0.75rem !important;
+    align-items: flex-start !important;
+    padding-top: 2rem !important;
+  }
+  .auth-card {
+    width: 100% !important;
+  }
+}

@@ -125,7 +125,7 @@ export default function AddMovieModal({ onClose, onSaved }) {
 
             <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.8rem" }}>
               <Field label="Title *" value={form.title} onChange={(v) => set("title", v)} />
-              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
+              <div className="form-grid-2col" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
                 <Field label="Year" value={form.year} onChange={(v) => set("year", v)} type="number" />
                 <Field label="Genre" value={form.genre} onChange={(v) => set("genre", v)} />
               </div>

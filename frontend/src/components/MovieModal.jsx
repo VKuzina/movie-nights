@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { PosterImage } from "../pages/Dashboard";
 
 const PREF_OPTIONS = [
@@ -18,15 +18,25 @@ const PREF_COLOR = {
   dont_want_to_watch:    "#e74c3c",
 };
 
+function useMobile() {
+  const [mobile, setMobile] = useState(() => window.innerWidth <= 640);
+  useEffect(() => {
+    const h = () => setMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, []);
+  return mobile;
+}
+
 export default function MovieModal({ movie, allMovies, preference, onPreferenceChange, onClose, onSelectMovie }) {
-  // Close on Escape
+  const isMobile = useMobile();
+
   useEffect(() => {
     const handler = (e) => { if (e.key === "Escape") onClose(); };
     window.addEventListener("keydown", handler);
     return () => window.removeEventListener("keydown", handler);
   }, [onClose]);
 
-  // Prevent body scroll while modal is open
   useEffect(() => {
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
@@ -36,7 +46,7 @@ export default function MovieModal({ movie, allMovies, preference, onPreferenceC
     ? movie.genre.split(",").map((g) => g.trim()).filter(Boolean)
     : [];
 
-  // Similar movies: share at least one genre, exclude current, pick up to 6
+  const currentYear = movie.year ? parseInt(movie.year) : null;
   const similar = allMovies
     .filter((m) => {
       if (m.id === movie.id) return false;
@@ -44,38 +54,117 @@ export default function MovieModal({ movie, allMovies, preference, onPreferenceC
       const mGenres = m.genre.split(",").map((g) => g.trim());
       return genres.some((g) => mGenres.includes(g));
     })
-    .slice(0, 6);
+    .map((m) => {
+      const mGenres = m.genre.split(",").map((g) => g.trim());
+      const overlap = genres.filter((g) => mGenres.includes(g)).length;
+      const mYear = m.year ? parseInt(m.year) : null;
+      const yearDiff = currentYear && mYear ? Math.abs(currentYear - mYear) : 9999;
+      return { m, overlap, yearDiff };
+    })
+    .sort((a, b) => b.overlap - a.overlap || a.yearDiff - b.yearDiff)
+    .slice(0, 6)
+    .map(({ m }) => m);
 
   const prefColor = preference ? PREF_COLOR[preference] : null;
 
+  /* ── Mobile layout ── */
+  if (isMobile) {
+    return (
+      <div style={mobileOverlayStyle}>
+        {/* Fixed close button floating over poster */}
+        <button onClick={onClose} style={mobileCloseBtnStyle} aria-label="Close">✕</button>
+
+        <div style={mobileCardStyle} className="fade-up">
+          {/* Full-width poster, height-capped */}
+          <div style={{ overflow: "hidden", lineHeight: 0 }}>
+            {movie.poster_url
+              ? <img
+                  src={movie.poster_url}
+                  alt={movie.title}
+                  referrerPolicy="no-referrer"
+                  loading="eager"
+                  style={{ width: "100%", height: "260px", objectFit: "cover", display: "block" }}
+                />
+              : <div style={{ width: "100%", height: "200px", background: "linear-gradient(160deg,#1a1a2e,#16213e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem" }}>🎬</div>
+            }
+          </div>
+
+          {/* Text content */}
+          <div style={{ padding: "1.25rem" }}>
+            <h1 style={{ fontSize: "1.5rem", fontWeight: 800, letterSpacing: "-0.02em", lineHeight: 1.2, marginBottom: "0.5rem" }}>
+              {movie.title}
+            </h1>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", flexWrap: "wrap", marginBottom: "0.85rem" }}>
+              {movie.year && <span style={{ color: "#666", fontSize: "0.9rem" }}>{movie.year}</span>}
+              {genres.map((g) => <span key={g} className="genre-badge">{g}</span>)}
+            </div>
+
+            {movie.description && (
+              <p style={{ color: "#999", fontSize: "0.88rem", lineHeight: 1.65, marginBottom: "1.1rem" }}>
+                {movie.description}
+              </p>
+            )}
+
+            {movie.imdb_url && (
+              <a href={movie.imdb_url} target="_blank" rel="noreferrer" style={{ ...imdbBtnStyle, marginBottom: "1rem" }}>
+                <span style={{ fontSize: "1rem" }}>⭐</span> View on IMDb
+              </a>
+            )}
+
+            <div style={{ display: "flex", flexDirection: "column", gap: "0.4rem" }}>
+              <label style={prefLabelStyle}>Your preference</label>
+              <select
+                className="pref-select"
+                value={preference || ""}
+                onChange={(e) => onPreferenceChange(e.target.value)}
+                style={{
+                  ...prefSelectStyle,
+                  borderColor: prefColor ? prefColor + "66" : "#2a2a2a",
+                  color: prefColor || "#ccc",
+                  background: prefColor ? prefColor + "11" : "#0d0d0d",
+                }}
+              >
+                {PREF_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            </div>
+          </div>
+
+          {/* Similar movies */}
+          {similar.length > 0 && (
+            <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", padding: "1rem 1.25rem 2rem" }}>
+              <h3 style={similarTitleStyle}>More like this</h3>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))", gap: "0.6rem" }}>
+                {similar.map((m) => (
+                  <SimilarCard key={m.id} movie={m} onClick={() => onSelectMovie(m)} />
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  /* ── Desktop layout (unchanged) ── */
   return (
     <div style={overlayStyle} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
       <div style={modalStyle} className="fade-up">
-        {/* Close button */}
         <button onClick={onClose} style={closeBtnStyle} aria-label="Close">✕</button>
 
-        {/* Main content */}
         <div style={bodyStyle}>
-          {/* Left: poster */}
           <div style={posterColStyle}>
-            <PosterImage movie={movie} />
+            <PosterImage movie={movie} eager />
           </div>
 
-          {/* Right: details */}
           <div style={detailsStyle}>
             <div>
               <h1 style={titleStyle}>{movie.title}</h1>
-
               <div style={metaRowStyle}>
                 {movie.year && <span style={yearStyle}>{movie.year}</span>}
-                {genres.map((g) => (
-                  <span key={g} className="genre-badge">{g}</span>
-                ))}
+                {genres.map((g) => <span key={g} className="genre-badge">{g}</span>)}
               </div>
-
-              {movie.description && (
-                <p style={descStyle}>{movie.description}</p>
-              )}
+              {movie.description && <p style={descStyle}>{movie.description}</p>}
             </div>
 
             <div style={actionsStyle}>
@@ -84,7 +173,6 @@ export default function MovieModal({ movie, allMovies, preference, onPreferenceC
                   <span style={{ fontSize: "1rem" }}>⭐</span> View on IMDb
                 </a>
               )}
-
               <div style={prefWrapStyle}>
                 <label style={prefLabelStyle}>Your preference</label>
                 <select
@@ -98,23 +186,18 @@ export default function MovieModal({ movie, allMovies, preference, onPreferenceC
                     background: prefColor ? prefColor + "11" : "#0d0d0d",
                   }}
                 >
-                  {PREF_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>{o.label}</option>
-                  ))}
+                  {PREF_OPTIONS.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
                 </select>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Similar movies */}
         {similar.length > 0 && (
           <div style={similarSectionStyle}>
             <h3 style={similarTitleStyle}>More like this</h3>
             <div style={similarGridStyle}>
-              {similar.map((m) => (
-                <SimilarCard key={m.id} movie={m} onClick={() => onSelectMovie(m)} />
-              ))}
+              {similar.map((m) => <SimilarCard key={m.id} movie={m} onClick={() => onSelectMovie(m)} />)}
             </div>
           </div>
         )}
@@ -135,7 +218,41 @@ function SimilarCard({ movie, onClick }) {
   );
 }
 
-/* ── Styles ── */
+/* ── Mobile-specific styles ── */
+const mobileOverlayStyle = {
+  position: "fixed",
+  inset: 0,
+  background: "rgba(0,0,0,0.92)",
+  zIndex: 200,
+  overflowY: "auto",
+  WebkitOverflowScrolling: "touch",
+};
+
+const mobileCardStyle = {
+  background: "#161616",
+  minHeight: "100%",
+  width: "100%",
+};
+
+const mobileCloseBtnStyle = {
+  position: "fixed",
+  top: "0.75rem",
+  right: "0.75rem",
+  background: "rgba(0,0,0,0.6)",
+  border: "none",
+  color: "#fff",
+  fontSize: "1rem",
+  width: "34px",
+  height: "34px",
+  borderRadius: "50%",
+  cursor: "pointer",
+  zIndex: 210,
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+};
+
+/* ── Shared / Desktop styles ── */
 const overlayStyle = {
   position: "fixed",
   inset: 0,

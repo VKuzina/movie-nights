@@ -1,5 +1,15 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
+
+function useMobile() {
+  const [mobile, setMobile] = useState(() => window.innerWidth <= 640);
+  useEffect(() => {
+    const h = () => setMobile(window.innerWidth <= 640);
+    window.addEventListener("resize", h);
+    return () => window.removeEventListener("resize", h);
+  }, []);
+  return mobile;
+}
 import { api } from "../api/client";
 import AddMovieModal from "../components/AddMovieModal";
 import MovieModal from "../components/MovieModal";
@@ -60,7 +70,7 @@ export default function Dashboard() {
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0" }}>
       <Nav username={user.username} onLogout={() => { api.logout(); navigate("/login"); }} />
-      <main style={{ padding: "2rem 2rem 4rem" }}>
+      <main className="page-main" style={{ padding: "2rem 2rem 4rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.2rem" }}>
           <div>
             <h2 style={{ fontSize: "1.6rem", fontWeight: 700, margin: 0 }}>Browse Movies</h2>
@@ -114,7 +124,7 @@ export default function Dashboard() {
             </div>
           );
           return (
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1.5rem" }}>
+            <div className="movie-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1.5rem" }}>
               {visible.map((movie) => (
                 <MovieCard
                   key={movie.id}
@@ -147,20 +157,44 @@ export default function Dashboard() {
 
 export function Nav({ username, onLogout }) {
   const location = useLocation();
+  const isMobile = useMobile();
   const isActive = (path) => {
     if (path === "/") return location.pathname === "/";
     return location.pathname.startsWith(path);
   };
+  const navLinks = (
+    <>
+      <Link to="/" className={`nav-link${isActive("/") ? " active" : ""}`} style={navStyles.link}>Browse</Link>
+      <Link to="/lists" className={`nav-link${isActive("/lists") ? " active" : ""}`} style={navStyles.link}>My Lists</Link>
+      <Link to="/events" className={`nav-link${isActive("/events") ? " active" : ""}`} style={navStyles.link}>Events</Link>
+    </>
+  );
+
+  if (isMobile) {
+    return (
+      <header style={{ ...navStyles.header, height: "auto", padding: "0.6rem 1rem", flexDirection: "column", gap: 0 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", width: "100%" }}>
+          <Link to="/" style={{ textDecoration: "none" }}>
+            <span style={navStyles.logo}>🎬 Movie Nights</span>
+          </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
+            <span style={navStyles.avatar}>{username[0].toUpperCase()}</span>
+            <button className="btn-ghost" onClick={onLogout} style={navStyles.logoutBtn}>Sign out</button>
+          </div>
+        </div>
+        <div style={{ display: "flex", gap: "1.5rem", justifyContent: "center", width: "100%", paddingTop: "0.4rem", paddingBottom: "0.1rem", borderTop: "1px solid rgba(255,255,255,0.06)", marginTop: "0.5rem" }}>
+          {navLinks}
+        </div>
+      </header>
+    );
+  }
+
   return (
     <header style={navStyles.header}>
       <Link to="/" style={{ textDecoration: "none" }}>
         <span style={navStyles.logo}>🎬 Movie Nights</span>
       </Link>
-      <nav style={navStyles.links}>
-        <Link to="/" className={`nav-link${isActive("/") ? " active" : ""}`} style={navStyles.link}>Browse</Link>
-        <Link to="/lists" className={`nav-link${isActive("/lists") ? " active" : ""}`} style={navStyles.link}>My Lists</Link>
-        <Link to="/events" className={`nav-link${isActive("/events") ? " active" : ""}`} style={navStyles.link}>Events</Link>
-      </nav>
+      <nav style={navStyles.links}>{navLinks}</nav>
       <div style={navStyles.right}>
         <span style={navStyles.avatar}>{username[0].toUpperCase()}</span>
         <span style={navStyles.username}>{username}</span>
@@ -170,7 +204,7 @@ export function Nav({ username, onLogout }) {
   );
 }
 
-export function PosterImage({ movie }) {
+export function PosterImage({ movie, eager }) {
   const [failed, setFailed] = useState(false);
 
   if (!movie.poster_url || failed) {
@@ -188,7 +222,7 @@ export function PosterImage({ movie }) {
         src={movie.poster_url}
         alt={movie.title}
         referrerPolicy="no-referrer"
-        loading="lazy"
+        loading={eager ? "eager" : "lazy"}
         onError={() => setFailed(true)}
         style={{ width: "100%", aspectRatio: "2/3", objectFit: "cover", display: "block" }}
       />

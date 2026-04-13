@@ -44,7 +44,7 @@ export default function Events() {
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0" }}>
       <Nav username={user.username} onLogout={() => { api.logout(); navigate("/login"); }} />
-      <main style={{ padding: "2rem 2rem 4rem" }}>
+      <main className="page-main" style={{ padding: "2rem 2rem 4rem" }}>
         {error && <p style={{ color: "#e50914", marginBottom: "1rem", fontSize: "0.9rem" }}>{error}</p>}
 
         {/* Pending invites */}

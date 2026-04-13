@@ -95,7 +95,7 @@ export default function EventDetail() {
   return (
     <div style={{ minHeight: "100vh", background: "#0d0d0d", color: "#f0f0f0" }}>
       <Nav username={user.username} onLogout={() => { api.logout(); navigate("/login"); }} />
-      <main style={{ padding: "2rem 2rem 4rem", maxWidth: "960px" }}>
+      <main className="page-main" style={{ padding: "2rem 2rem 4rem", maxWidth: "960px" }}>
         {error && <p style={{ color: "#e50914", marginBottom: "1rem" }}>{error}</p>}
 
         <button onClick={() => navigate("/events")} style={{ background: "none", border: "none", color: "#aaa", cursor: "pointer", marginBottom: "1rem", padding: 0 }}>← Back to Events</button>
@@ -114,7 +114,7 @@ export default function EventDetail() {
             ))}
           </div>
           {isOrganizer && (
-            <form onSubmit={handleInvite} style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
+            <form onSubmit={handleInvite} className="invite-form" style={{ display: "flex", gap: "0.6rem", alignItems: "center" }}>
               <input
                 value={inviteUsername}
                 onChange={(e) => setInviteUsername(e.target.value)}
