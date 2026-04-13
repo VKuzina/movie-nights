@@ -83,9 +83,9 @@ export default function MovieModal({ movie, allMovies, preference, onPreferenceC
                   alt={movie.title}
                   referrerPolicy="no-referrer"
                   loading="eager"
-                  style={{ width: "100%", height: "260px", objectFit: "cover", display: "block" }}
+                  style={{ width: "100%", display: "block" }}
                 />
-              : <div style={{ width: "100%", height: "200px", background: "linear-gradient(160deg,#1a1a2e,#16213e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem" }}>🎬</div>
+              : <div style={{ width: "100%", aspectRatio: "2/3", background: "linear-gradient(160deg,#1a1a2e,#16213e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "3rem" }}>🎬</div>
             }
           </div>
 

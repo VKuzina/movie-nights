@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
 import { Nav, PosterImage } from "./Dashboard";
@@ -21,6 +21,23 @@ export default function MyLists() {
   const [prefMap, setPrefMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const modalPushed = useRef(false);
+
+  const openMovieModal = (movie) => {
+    setSelectedMovie(movie);
+    window.history.pushState({ modal: true }, "");
+    modalPushed.current = true;
+  };
+  const closeMovieModal = () => {
+    setSelectedMovie(null);
+    if (modalPushed.current) { modalPushed.current = false; window.history.back(); }
+  };
+  useEffect(() => {
+    if (!selectedMovie) return;
+    const onPop = () => { modalPushed.current = false; setSelectedMovie(null); };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [selectedMovie]);
 
   useEffect(() => {
     Promise.all([api.me(), api.listMovies(), api.myMovies()])
@@ -98,7 +115,7 @@ export default function MyLists() {
             </p>
             <div className="movie-grid" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(180px, 1fr))", gap: "1.5rem" }}>
               {movies.map((movie) => (
-                <ListMovieCard key={movie.id} movie={movie} onPreferenceChange={handlePreferenceChange} onClick={() => setSelectedMovie(movie)} />
+                <ListMovieCard key={movie.id} movie={movie} onPreferenceChange={handlePreferenceChange} onClick={() => openMovieModal(movie)} />
               ))}
             </div>
           </>
@@ -110,8 +127,8 @@ export default function MyLists() {
           allMovies={allMovies}
           preference={prefMap[selectedMovie.id]}
           onPreferenceChange={(val) => handlePreferenceChange(selectedMovie.id, val)}
-          onClose={() => setSelectedMovie(null)}
-          onSelectMovie={(m) => setSelectedMovie(m)}
+          onClose={closeMovieModal}
+          onSelectMovie={(m) => { setSelectedMovie(m); window.history.replaceState({ modal: true }, ""); }}
         />
       )}
     </div>

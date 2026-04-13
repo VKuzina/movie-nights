@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, Link, useLocation } from "react-router-dom";
 
 function useMobile() {
@@ -31,6 +31,23 @@ export default function Dashboard() {
   const [error, setError] = useState("");
   const [showAddModal, setShowAddModal] = useState(false);
   const [selectedMovie, setSelectedMovie] = useState(null);
+  const modalPushed = useRef(false);
+
+  const openMovieModal = (movie) => {
+    setSelectedMovie(movie);
+    window.history.pushState({ modal: true }, "");
+    modalPushed.current = true;
+  };
+  const closeMovieModal = () => {
+    setSelectedMovie(null);
+    if (modalPushed.current) { modalPushed.current = false; window.history.back(); }
+  };
+  useEffect(() => {
+    if (!selectedMovie) return;
+    const onPop = () => { modalPushed.current = false; setSelectedMovie(null); };
+    window.addEventListener("popstate", onPop);
+    return () => window.removeEventListener("popstate", onPop);
+  }, [selectedMovie]);
   const [search, setSearch] = useState("");
 
   useEffect(() => {
@@ -131,7 +148,7 @@ export default function Dashboard() {
                   movie={movie}
                   preference={prefMap[movie.id]}
                   onPreferenceChange={(val) => handlePreference(movie.id, val)}
-                  onClick={() => setSelectedMovie(movie)}
+                  onClick={() => openMovieModal(movie)}
                 />
               ))}
             </div>
@@ -147,8 +164,8 @@ export default function Dashboard() {
           allMovies={movies}
           preference={prefMap[selectedMovie.id]}
           onPreferenceChange={(val) => handlePreference(selectedMovie.id, val)}
-          onClose={() => setSelectedMovie(null)}
-          onSelectMovie={(m) => setSelectedMovie(m)}
+          onClose={closeMovieModal}
+          onSelectMovie={(m) => { setSelectedMovie(m); window.history.replaceState({ modal: true }, ""); }}
         />
       )}
     </div>
